@@ -25,7 +25,9 @@
       <form id="login-form" class="text-left" method="POST" action="/auth/login">
         <fieldset>
           <div class="login-form-main-message"></div>
-          <div class="etc-login-form" id="err-msg"></div>
+          <div class="etc-login-form" id="err-msg">
+            <p>{{ err_msg }}</p>
+          </div>
           <div class="main-login-form">
             <div class="login-group">
               <div class="form-group">
@@ -58,6 +60,7 @@
   <script type="text/javascript" src="{{ static_url('js/jquery.validate.min.js') }}"></script>
   <script type="text/javascript" src="{{ static_url('js/localization/messages_zh.min.js') }}"></script>
   <script type="text/javascript" src="{{ static_url('upyun/js/spark-md5.min.js') }}"></script>
+  <script type="text/javascript" src="{{ static_url('js/json2.js') }}"></script>
 
   <script>
     $(function() {
@@ -77,10 +80,45 @@
         },
         errorClass: "form-invalid",
         submitHandler: function(form) {
+          var email = $("#lg_email").val();
           var pwd = $("#lg_pwd").val();
           var md5pwd = SparkMD5.hash(pwd);
           $("#lg_pwd").val(md5pwd);
-          $("#login-form").submit();
+          form.submit();
+          /*
+          var data = {
+            "appid": "api",
+            "app_secret": "81aa714142f897fa318f3315c9f853",
+            "login": email,
+            "pwd": md5pwd
+          };
+          var json = JSON.stringify(data);
+
+          $.ajax({
+            type: "POST",
+            url: "http://api.7x24hs.com/auth/token",
+            data: json,
+            dataType: "json",
+            contentType: 'application/json',
+            success: function(data, status, xhr) {
+              location.href = "/auth/welcome";
+            },
+            error: function(XMLHttpRequest, textStatus, errorThrown) {
+              console.log("XMLHttpRequest.status:" + XMLHttpRequest.status);
+              if (XMLHttpRequest.status == 200) {
+                // $.alert("error:200");
+              } else if (XMLHttpRequest.status == 404) {
+                $('#err-msg').html('<div class="etc-login-form" class="#err-msg"><p>用户名或密码不正确!</p></div>');
+                $("#lg_pwd").val('');
+              } else {
+                $('#err-msg').html('<div class="etc-login-form" class="#err-msg"><p>' + XMLHttpRequest.status + ': 服务器异常,请稍后重试!</p></div>');
+              }
+            },
+            complete: function(XMLHttpRequest, textStatus) {
+              this; // 调用本次AJAX请求时传递的options参数
+            }
+          });
+          */
         }
       });
     });

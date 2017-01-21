@@ -32,22 +32,20 @@ import requests
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../"))
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../dao"))
 
-from comm import *
-from global_const import *
-from dao import auth_login_dao
-from dao import auth_basic_dao
-from dao import auth_access_dao
-
 from tornado.escape import json_encode, json_decode
 from tornado.httpclient import *
 from tornado.httputil import url_concat
 from bson import json_util
 
+from comm import *
+from global_const import *
+
 
 class AuthLoginHandler(tornado.web.RequestHandler):
     def get(self):
         logging.info(self.request)
-        self.render('auth/login.html')
+        err_msg = ""
+        self.render('auth/login.html', err_msg=err_msg)
 
     def post(self):
         logging.info(self.request)
@@ -58,34 +56,178 @@ class AuthLoginHandler(tornado.web.RequestHandler):
         logging.info("try login as email:[%r] pwd:[%r] remember:[%r]", email, pwd, remember)
 
         # login
-        url = "http://" + API_HOST + ":" + API_PORT + "/api/auth/token"
-        http_client = HTTPClient()
-        data = {"appid":"7x24hs:api",
-                "app_secret":"2518e11b3bc89ebec594350d5739f29e",
-                "login":email,
-                "pwd":pwd}
-        _json = json_encode(data)
-        logging.info("request %r body %r", url, _json)
-        response = http_client.fetch(url, method="POST", body=_json)
-        logging.info("got response %r", response.body)
-        session_ticket = json_decode(response.body)
-
-        self.set_secure_cookie("access_token", session_ticket['access_token'])
+        try:
+            url = "http://api.7x24hs.com/auth/token"
+            http_client = HTTPClient()
+            data = {"appid":"7x24hs:api",
+                    "app_secret":"2518e11b3bc89ebec594350d5739f29e",
+                    "login":email,
+                    "pwd":pwd}
+            _json = json_encode(data)
+            logging.info("request %r body %r", url, _json)
+            response = http_client.fetch(url, method="POST", body=_json)
+            logging.info("got response %r", response.body)
+            session_ticket = json_decode(response.body)
+            self.set_secure_cookie("access_token", session_ticket['access_token'])
+        except:
+            err_title = str( sys.exc_info()[0] );
+            err_detail = str( sys.exc_info()[1] );
+            logging.error("error: %r info: %r", err_title, err_detail)
+            if err_detail == 'HTTP 404: Not Found':
+                err_msg = "用户名或密码不正确!"
+                self.render('auth/login.html', err_msg=err_msg)
+                return
 
         self.redirect('/auth/welcome')
 
 
 class AuthRegisterHandler(tornado.web.RequestHandler):
     def get(self):
-        self.render('auth/register.html')
+        err_msg = ""
+        self.render('auth/register.html', err_msg=err_msg)
+
+    def post(self):
+        logging.info(self.request)
+        logging.info(self.request.body)
+        email = self.get_argument("reg_email", "")
+        pwd = self.get_argument("reg_pwd", "")
+        logging.info("try register as email:[%r] pwd:[%r]", email, pwd)
+
+        # register
+        try:
+            url = "http://api.7x24hs.com/auth/accounts"
+            http_client = HTTPClient()
+            data = {"appid":"7x24hs:api",
+                    "app_secret":"2518e11b3bc89ebec594350d5739f29e",
+                    "login":email,
+                    "pwd":pwd}
+            _json = json_encode(data)
+            logging.info("request %r body %r", url, _json)
+            response = http_client.fetch(url, method="POST", body=_json)
+            logging.info("got response %r", response.body)
+            session_ticket = json_decode(response.body)
+        except:
+            err_title = str( sys.exc_info()[0] );
+            err_detail = str( sys.exc_info()[1] );
+            logging.error("error: %r info: %r", err_title, err_detail)
+            if err_detail == 'HTTP 409: Conflict':
+                err_msg = "用户名已经注册!"
+                self.render('auth/register.html', err_msg=err_msg)
+                return
+
+        err_msg = "注册成功，请登录!"
+        self.render('auth/register.html', err_msg=err_msg)
 
 
 class AuthForgotPwdHandler(tornado.web.RequestHandler):
     def get(self):
-        self.render('auth/forgot-pwd.html')
+        err_msg = "When you fill in your registered email address, you will be sent instructions on how to reset your password."
+        self.render('auth/forgot-pwd.html', err_msg=err_msg)
+
+    def post(self):
+        logging.info(self.request)
+        logging.info(self.request.body)
+        email = self.get_argument("fp_email", "")
+        logging.info("try to send forgot password email to [%r]", email)
+
+        try:
+            url = "http://api.7x24hs.com/auth/email/forgot-pwd"
+            http_client = HTTPClient()
+            data = {"appid":"7x24hs:api",
+                    "app_secret":"2518e11b3bc89ebec594350d5739f29e",
+                    "login":email}
+            _json = json_encode(data)
+            logging.info("request %r body %r", url, _json)
+            response = http_client.fetch(url, method="POST", body=_json)
+            logging.info("got response %r", response.body)
+        except:
+            err_title = str( sys.exc_info()[0] );
+            err_detail = str( sys.exc_info()[1] );
+            logging.error("error: %r info: %r", err_title, err_detail)
+            if err_detail == 'HTTP 404: Not Found':
+                err_msg = "帐号不存在!"
+                self.render('auth/forgot-pwd.html', err_msg=err_msg)
+                return
+
+        err_msg = "邮件已经发出, 请注意查收!"
+        self.render('auth/forgot-pwd.html', err_msg=err_msg)
+
+
+class AuthEmailResetPwdHandler(tornado.web.RequestHandler):
+    def get(self):
+        logging.info(self.request)
+        ekey = self.get_argument("ekey", "")
+        email = self.get_argument("email", "")
+        logging.info("try reset email=[%r] password by ekey=[%r]", email, ekey)
+
+        err_msg = ""
+        self.render('auth/reset-pwd.html',
+                err_msg=err_msg,
+                email=email,
+                ekey=ekey)
+
+    def post(self):
+        logging.info(self.request)
+        logging.info(self.request.body)
+        email = self.get_argument("reset_email", "")
+        ekey = self.get_argument("reset_ekey", "")
+        pwd = self.get_argument("reset_pwd", "")
+        logging.info("try to reset password email=[%r] ekey=[%r] pwd=[%r]", email, ekey, pwd)
+
+        try:
+            url = "http://api.7x24hs.com/auth/email/reset-pwd"
+            http_client = HTTPClient()
+            data = {"appid":"7x24hs:api",
+                    "app_secret":"2518e11b3bc89ebec594350d5739f29e",
+                    "login":email,
+                    "ekey":ekey,
+                    "pwd":pwd}
+            _json = json_encode(data)
+            logging.info("request %r body %r", url, _json)
+            response = http_client.fetch(url, method="POST", body=_json)
+            logging.info("got response %r", response.body)
+        except:
+            err_title = str( sys.exc_info()[0] );
+            err_detail = str( sys.exc_info()[1] );
+            logging.error("error: %r info: %r", err_title, err_detail)
+            if err_detail == 'HTTP 404: Not Found':
+                err_msg = "帐号不存在!"
+                self.render('auth/reset-pwd.html',
+                        err_msg=err_msg,
+                        email=email,
+                        ekey=ekey)
+                return
+            elif err_detail == 'HTTP 408: Request Timeout':
+                err_msg = "请求超时, 在5分钟内有效!"
+                self.render('auth/reset-pwd.html',
+                        err_msg=err_msg,
+                        email=email,
+                        ekey=ekey)
+                return
+
+        err_msg = "密码修改成功, 请重新登录!"
+        self.render('auth/reset-pwd.html',
+                err_msg=err_msg,
+                email=email,
+                ekey=ekey)
 
 
 class AuthWelcomeHandler(AuthorizationHandler):
     @tornado.web.authenticated  # if no session, redirect to login page
     def get(self):
         self.render('auth/welcome.html')
+
+
+class AuthLogoutHandler(AuthorizationHandler):
+    @tornado.web.authenticated  # if no session, redirect to login page
+    def post(self):
+        access_token = self.get_secure_cookie("access_token")
+
+        # logout
+        url = "http://api.7x24hs.com/auth/token"
+        http_client = HTTPClient()
+        response = http_client.fetch(url, method="DELETE", headers={"Authorization":"Bearer "+access_token})
+        logging.info("got response %r", response.body)
+        self.clear_cookie("access_token")
+
+        self.redirect("/auth/welcome");

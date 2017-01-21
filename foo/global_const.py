@@ -17,8 +17,8 @@
 # under the License.
 
 
-API_HOST = "api.7x24hs.com"
-API_PORT = "80"
+API_HOST = "127.0.0.1"
+API_PORT = "8009"
 
 # mongodb
 MONGO_HOST = "127.0.0.1"
