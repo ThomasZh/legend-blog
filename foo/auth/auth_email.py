@@ -41,11 +41,11 @@ from comm import *
 from global_const import *
 
 
-class AuthLoginHandler(tornado.web.RequestHandler):
+class AuthEmailLoginHandler(tornado.web.RequestHandler):
     def get(self):
         logging.info(self.request)
         err_msg = ""
-        self.render('auth/login.html', err_msg=err_msg)
+        self.render('auth/email-login.html', err_msg=err_msg)
 
     def post(self):
         logging.info(self.request)
@@ -75,16 +75,16 @@ class AuthLoginHandler(tornado.web.RequestHandler):
             logging.error("error: %r info: %r", err_title, err_detail)
             if err_detail == 'HTTP 404: Not Found':
                 err_msg = "用户名或密码不正确!"
-                self.render('auth/login.html', err_msg=err_msg)
+                self.render('auth/email-login.html', err_msg=err_msg)
                 return
 
         self.redirect('/auth/welcome')
 
 
-class AuthRegisterHandler(tornado.web.RequestHandler):
+class AuthEmailRegisterHandler(tornado.web.RequestHandler):
     def get(self):
         err_msg = ""
-        self.render('auth/register.html', err_msg=err_msg)
+        self.render('auth/email-register.html', err_msg=err_msg)
 
     def post(self):
         logging.info(self.request)
@@ -112,17 +112,17 @@ class AuthRegisterHandler(tornado.web.RequestHandler):
             logging.error("error: %r info: %r", err_title, err_detail)
             if err_detail == 'HTTP 409: Conflict':
                 err_msg = "用户名已经注册!"
-                self.render('auth/register.html', err_msg=err_msg)
+                self.render('auth/email-register.html', err_msg=err_msg)
                 return
 
         err_msg = "注册成功，请登录!"
-        self.render('auth/register.html', err_msg=err_msg)
+        self.render('auth/email-register.html', err_msg=err_msg)
 
 
-class AuthForgotPwdHandler(tornado.web.RequestHandler):
+class AuthEmailForgotPwdHandler(tornado.web.RequestHandler):
     def get(self):
         err_msg = "When you fill in your registered email address, you will be sent instructions on how to reset your password."
-        self.render('auth/forgot-pwd.html', err_msg=err_msg)
+        self.render('auth/email-forgot-pwd.html', err_msg=err_msg)
 
     def post(self):
         logging.info(self.request)
@@ -149,8 +149,8 @@ class AuthForgotPwdHandler(tornado.web.RequestHandler):
                 self.render('auth/forgot-pwd.html', err_msg=err_msg)
                 return
 
-        err_msg = "邮件已经发出, 请注意查收!"
-        self.render('auth/forgot-pwd.html', err_msg=err_msg)
+        err_msg = "邮件已经发出, 请注意查收! 此邮件在5分钟内有效。"
+        self.render('auth/email-forgot-pwd.html', err_msg=err_msg)
 
 
 class AuthEmailResetPwdHandler(tornado.web.RequestHandler):
@@ -161,7 +161,7 @@ class AuthEmailResetPwdHandler(tornado.web.RequestHandler):
         logging.info("try reset email=[%r] password by ekey=[%r]", email, ekey)
 
         err_msg = ""
-        self.render('auth/reset-pwd.html',
+        self.render('auth/email-reset-pwd.html',
                 err_msg=err_msg,
                 email=email,
                 ekey=ekey)
@@ -192,21 +192,21 @@ class AuthEmailResetPwdHandler(tornado.web.RequestHandler):
             logging.error("error: %r info: %r", err_title, err_detail)
             if err_detail == 'HTTP 404: Not Found':
                 err_msg = "帐号不存在!"
-                self.render('auth/reset-pwd.html',
+                self.render('auth/email-reset-pwd.html',
                         err_msg=err_msg,
                         email=email,
                         ekey=ekey)
                 return
             elif err_detail == 'HTTP 408: Request Timeout':
                 err_msg = "请求超时, 在5分钟内有效!"
-                self.render('auth/reset-pwd.html',
+                self.render('auth/email-reset-pwd.html',
                         err_msg=err_msg,
                         email=email,
                         ekey=ekey)
                 return
 
         err_msg = "密码修改成功, 请重新登录!"
-        self.render('auth/reset-pwd.html',
+        self.render('auth/email-reset-pwd.html',
                 err_msg=err_msg,
                 email=email,
                 ekey=ekey)
