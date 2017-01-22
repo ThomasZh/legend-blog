@@ -41,7 +41,7 @@ from comm import *
 from global_const import *
 
 
-class AuthEmailLoginHandler(tornado.web.RequestHandler):
+class AuthEmailLoginHandler(BaseHandler):
     def get(self):
         logging.info(self.request)
         err_msg = ""
@@ -57,10 +57,11 @@ class AuthEmailLoginHandler(tornado.web.RequestHandler):
 
         # login
         try:
+            code = self.get_code()
+
             url = "http://api.7x24hs.com/auth/token"
             http_client = HTTPClient()
-            data = {"appid":"7x24hs:api",
-                    "app_secret":"2518e11b3bc89ebec594350d5739f29e",
+            data = {"code":code,
                     "login":email,
                     "pwd":pwd}
             _json = json_encode(data)
@@ -81,7 +82,7 @@ class AuthEmailLoginHandler(tornado.web.RequestHandler):
         self.redirect('/auth/welcome')
 
 
-class AuthEmailRegisterHandler(tornado.web.RequestHandler):
+class AuthEmailRegisterHandler(BaseHandler):
     def get(self):
         err_msg = ""
         self.render('auth/email-register.html', err_msg=err_msg)
@@ -95,10 +96,11 @@ class AuthEmailRegisterHandler(tornado.web.RequestHandler):
 
         # register
         try:
+            code = self.get_code()
+
             url = "http://api.7x24hs.com/auth/accounts"
             http_client = HTTPClient()
-            data = {"appid":"7x24hs:api",
-                    "app_secret":"2518e11b3bc89ebec594350d5739f29e",
+            data = {"code":code,
                     "login":email,
                     "pwd":pwd}
             _json = json_encode(data)
@@ -119,7 +121,7 @@ class AuthEmailRegisterHandler(tornado.web.RequestHandler):
         self.render('auth/email-register.html', err_msg=err_msg)
 
 
-class AuthEmailForgotPwdHandler(tornado.web.RequestHandler):
+class AuthEmailForgotPwdHandler(BaseHandler):
     def get(self):
         err_msg = "When you fill in your registered email address, you will be sent instructions on how to reset your password."
         self.render('auth/email-forgot-pwd.html', err_msg=err_msg)
@@ -131,11 +133,12 @@ class AuthEmailForgotPwdHandler(tornado.web.RequestHandler):
         logging.info("try to send forgot password email to [%r]", email)
 
         try:
+            code = self.get_code()
+
             url = "http://api.7x24hs.com/auth/email/forgot-pwd"
             http_client = HTTPClient()
-            data = {"appid":"7x24hs:api",
-                    "app_secret":"2518e11b3bc89ebec594350d5739f29e",
-                    "login":email}
+            data = {"code":code,
+                    "email":email}
             _json = json_encode(data)
             logging.info("request %r body %r", url, _json)
             response = http_client.fetch(url, method="POST", body=_json)
@@ -153,7 +156,7 @@ class AuthEmailForgotPwdHandler(tornado.web.RequestHandler):
         self.render('auth/email-forgot-pwd.html', err_msg=err_msg)
 
 
-class AuthEmailResetPwdHandler(tornado.web.RequestHandler):
+class AuthEmailResetPwdHandler(BaseHandler):
     def get(self):
         logging.info(self.request)
         ekey = self.get_argument("ekey", "")
@@ -175,11 +178,12 @@ class AuthEmailResetPwdHandler(tornado.web.RequestHandler):
         logging.info("try to reset password email=[%r] ekey=[%r] pwd=[%r]", email, ekey, pwd)
 
         try:
+            code = self.get_code()
+
             url = "http://api.7x24hs.com/auth/email/reset-pwd"
             http_client = HTTPClient()
-            data = {"appid":"7x24hs:api",
-                    "app_secret":"2518e11b3bc89ebec594350d5739f29e",
-                    "login":email,
+            data = {"code":code,
+                    "email":email,
                     "ekey":ekey,
                     "pwd":pwd}
             _json = json_encode(data)

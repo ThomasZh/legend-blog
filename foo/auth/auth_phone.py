@@ -35,13 +35,12 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../dao"))
 from tornado.escape import json_encode, json_decode
 from tornado.httpclient import *
 from tornado.httputil import url_concat
-from bson import json_util
 
 from comm import *
 from global_const import *
 
 
-class AuthPhoneLoginHandler(tornado.web.RequestHandler):
+class AuthPhoneLoginHandler(BaseHandler):
     def get(self):
         logging.info(self.request)
         err_msg = ""
@@ -57,10 +56,11 @@ class AuthPhoneLoginHandler(tornado.web.RequestHandler):
 
         # login
         try:
+            code = self.get_code()
+
             url = "http://api.7x24hs.com/auth/token"
             http_client = HTTPClient()
-            data = {"appid":"7x24hs:api",
-                    "app_secret":"2518e11b3bc89ebec594350d5739f29e",
+            data = {"code":code,
                     "login":phone,
                     "pwd":pwd}
             _json = json_encode(data)
@@ -81,7 +81,7 @@ class AuthPhoneLoginHandler(tornado.web.RequestHandler):
         self.redirect('/auth/welcome')
 
 
-class AuthPhoneRegisterHandler(tornado.web.RequestHandler):
+class AuthPhoneRegisterHandler(BaseHandler):
     def get(self):
         err_msg = ""
         self.render('auth/phone-register.html', err_msg=err_msg)
@@ -89,17 +89,18 @@ class AuthPhoneRegisterHandler(tornado.web.RequestHandler):
     def post(self):
         logging.info(self.request)
         logging.info(self.request.body)
-        email = self.get_argument("reg_email", "")
+        phone = self.get_argument("reg_phone", "")
         pwd = self.get_argument("reg_pwd", "")
-        logging.info("try register as email:[%r] pwd:[%r]", email, pwd)
+        logging.info("try register as phone:[%r] pwd:[%r]", phone, pwd)
 
         # register
         try:
+            code = self.get_code()
+
             url = "http://api.7x24hs.com/auth/accounts"
             http_client = HTTPClient()
-            data = {"appid":"7x24hs:api",
-                    "app_secret":"2518e11b3bc89ebec594350d5739f29e",
-                    "login":email,
+            data = {"code":code,
+                    "login":phone,
                     "pwd":pwd}
             _json = json_encode(data)
             logging.info("request %r body %r", url, _json)
@@ -120,7 +121,7 @@ class AuthPhoneRegisterHandler(tornado.web.RequestHandler):
 
 
 
-class AuthPhoneLostPwdHandler(tornado.web.RequestHandler):
+class AuthPhoneLostPwdHandler(BaseHandler):
     def get(self):
         err_msg = "When you fill in your registered email address, you will be sent instructions on how to reset your password."
         self.render('auth/phone-lost-pwd.html', err_msg=err_msg)
@@ -134,11 +135,12 @@ class AuthPhoneLostPwdHandler(tornado.web.RequestHandler):
         logging.info("try to reset password phone=[%r] verify_code=[%r] pwd=[%r]", phone, verify_code, pwd)
 
         try:
+            code = self.get_code()
+
             url = "http://api.7x24hs.com/auth/phone/reset-pwd"
             http_client = HTTPClient()
-            data = {"appid":"7x24hs:api",
-                    "app_secret":"2518e11b3bc89ebec594350d5739f29e",
-                    "login":phone,
+            data = {"code":code,
+                    "phone":phone,
                     "verify_code":verify_code,
                     "pwd":pwd}
             _json = json_encode(data)
@@ -170,7 +172,7 @@ class AuthPhoneLostPwdHandler(tornado.web.RequestHandler):
                 err_msg=err_msg)
 
 
-class AuthPhoneVerifyCodeHandler(tornado.web.RequestHandler):
+class AuthPhoneVerifyCodeHandler(BaseHandler):
     def post(self):
         logging.info(self.request)
         logging.info(self.request.body)
@@ -179,11 +181,12 @@ class AuthPhoneVerifyCodeHandler(tornado.web.RequestHandler):
         logging.info("try to send lost password sms to [%r]", phone)
 
         try:
+            code = self.get_code()
+
             url = "http://api.7x24hs.com/auth/phone/verify-code"
             http_client = HTTPClient()
-            data = {"appid":"7x24hs:api",
-                    "app_secret":"2518e11b3bc89ebec594350d5739f29e",
-                    "login":phone}
+            data = {"code":code,
+                    "phone":phone}
             _json = json_encode(data)
             logging.info("request %r body %r", url, _json)
             response = http_client.fetch(url, method="POST", body=_json)

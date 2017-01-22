@@ -44,7 +44,7 @@ a:hover {
 }
 /*=== 4. Main Form ===*/
 .login-form-1 {
-  max-width: 300px;
+  max-width: 600px;
   border-radius: 5px;
   display: inline-block;
 }
@@ -131,6 +131,9 @@ a:hover {
   margin-top: -25px;
   border: 2px solid #efefef;
   transition: all ease-in-out 500ms;
+  text-align: center;
+  vertical-align: middle;
+  padding: 0px;
 }
 .login-form-1 .login-button:hover {
   color: #555555;

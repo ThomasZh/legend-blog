@@ -111,6 +111,8 @@
           dataType: "json",
           contentType: 'application/json',
           success: function(data, status, xhr) {
+            var btn = document.getElementById("code-button");
+            time(btn);
             $('.login-form-main-message').addClass('show error').html("验证码已通过短信发出, 注意查收! 5分钟内有效。");
           },
           error: function(XMLHttpRequest, textStatus, errorThrown) {

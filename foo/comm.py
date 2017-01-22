@@ -27,6 +27,11 @@ import random
 import hashlib
 from hashlib import md5
 import string
+import json as JSON # 启用别名，不会跟方法里的局部变量混淆
+from bson import json_util
+from tornado.escape import json_encode, json_decode
+from tornado.httpclient import *
+from tornado.httputil import url_concat
 
 
 class singleton(object):
@@ -192,6 +197,20 @@ def hash_pwd(md5pwd, salt):
 class PageNotFoundHandler(tornado.web.RequestHandler):
     def get(self):
         self.render('comm/page_404.html')
+
+
+class BaseHandler(tornado.web.RequestHandler):
+    def get_code(self):
+        url = "http://api.7x24hs.com/auth/code"
+        http_client = HTTPClient()
+        data = {"appid":"7x24hs:blog",
+                "app_secret":"2518e11b3bc89ebec594350d5739f29e"}
+        _json = json_encode(data)
+        response = http_client.fetch(url, method="POST", body=_json)
+        session_code = json_decode(response.body)
+        logging.info("got session_code %r", session_code)
+        code = session_code['code']
+        return code
 
 
 class AuthorizationHandler(tornado.web.RequestHandler):
