@@ -154,6 +154,11 @@ class AuthPhoneLostPwdHandler(tornado.web.RequestHandler):
                 self.render('auth/phone-lost-pwd.html',
                         err_msg=err_msg)
                 return
+            elif err_detail == 'HTTP 401: Unauthorized':
+                err_msg = "验证码不正确!"
+                self.render('auth/phone-lost-pwd.html',
+                        err_msg=err_msg)
+                return
             elif err_detail == 'HTTP 408: Request Timeout':
                 err_msg = "请求超时, 在5分钟内有效!"
                 self.render('auth/phone-lost-pwd.html',

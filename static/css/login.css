@@ -118,6 +118,36 @@ a:hover {
 .login-form-1 .login-button.clicked.error {
   color: #e74c3c;
 }
+/*=== 5. Verify Code Button ===*/
+.login-form-1 .code-button {
+  position: absolute;
+  right: 20px;
+  top: 75%;
+  background: #ffffff;
+  color: #999999;
+  /*padding: 11px 0;*/
+  width: 90px;
+  height: 30px;
+  margin-top: -25px;
+  border: 2px solid #efefef;
+  transition: all ease-in-out 500ms;
+}
+.login-form-1 .login-button:hover {
+  color: #555555;
+  transform: rotate(450deg);
+}
+.login-form-1 .login-button.clicked {
+  color: #555555;
+}
+.login-form-1 .login-button.clicked:hover {
+  transform: none;
+}
+.login-form-1 .login-button.clicked.success {
+  color: #2ecc71;
+}
+.login-form-1 .login-button.clicked.error {
+  color: #e74c3c;
+}
 /*=== 6. Form Invalid ===*/
 label.form-invalid {
   position: absolute;

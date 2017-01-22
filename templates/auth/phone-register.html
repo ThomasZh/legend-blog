@@ -23,10 +23,13 @@
     <!-- Main Form -->
     <div class="login-form-1">
       <form id="register-form" class="text-left" method="POST" action="/auth/phone/register">
-        <div class="login-form-main-message"></div>
-        <div class="etc-login-form" id="err-msg">
-          <p>{{ err_msg }}</p>
+        {% if err_msg %}
+        <div class="login-form-main-message show error">
+          {{ err_msg }}
         </div>
+        {% else %}
+        <div class="login-form-main-message"></div>
+        {% end %}
         <div class="main-login-form">
           <div class="login-group">
             <div class="form-group">

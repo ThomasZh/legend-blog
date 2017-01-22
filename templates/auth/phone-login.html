@@ -24,10 +24,13 @@
     <div class="login-form-1">
       <form id="login-form" class="text-left" method="POST" action="/auth/phone/login">
         <fieldset>
-          <div class="login-form-main-message"></div>
-          <div class="etc-login-form" id="err-msg">
-            <p>{{ err_msg }}</p>
+          {% if err_msg %}
+          <div class="login-form-main-message show error">
+            {{ err_msg }}
           </div>
+          {% else %}
+          <div class="login-form-main-message"></div>
+          {% end %}
           <div class="main-login-form">
             <div class="login-group">
               <div class="form-group">
@@ -35,7 +38,7 @@
                 <input type="text" class="form-control" id="lg_phone" name="lg_phone" placeholder="phone number">
               </div>
               <div class="form-group">
-                <label for="lg_password" class="sr-only">Password</label>
+                <label for="lg_pwd" class="sr-only">Password</label>
                 <input type="password" class="form-control" id="lg_pwd" name="lg_pwd" placeholder="password">
               </div>
               <div class="form-group login-group-checkbox">
@@ -43,7 +46,13 @@
                 <label for="lg_remember">remember</label>
               </div>
             </div>
-            <button type="submit" class="login-button"><i class="fa fa-chevron-right"></i></button>
+            {% if err_msg %}
+            <button type="submit" class="login-button error">
+              <i class="fa fa-lock"></i>
+            </button> {% else %}
+            <button type="submit" class="login-button">
+              <i class="fa fa-chevron-right"></i>
+            </button> {% end %}
           </div>
           <div class="etc-login-form">
             <p>forgot your password? <a href="/auth/phone/lost-pwd">click here</a></p>
