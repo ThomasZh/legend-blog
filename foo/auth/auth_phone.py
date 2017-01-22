@@ -50,10 +50,10 @@ class AuthPhoneLoginHandler(tornado.web.RequestHandler):
     def post(self):
         logging.info(self.request)
         logging.info(self.request.body)
-        email = self.get_argument("lg_email", "")
+        phone = self.get_argument("lg_phone", "")
         pwd = self.get_argument("lg_pwd", "")
         remember = self.get_argument("lg_remember", "")
-        logging.info("try login as email:[%r] pwd:[%r] remember:[%r]", email, pwd, remember)
+        logging.info("try login as phone:[%r] pwd:[%r] remember:[%r]", phone, pwd, remember)
 
         # login
         try:
@@ -61,7 +61,7 @@ class AuthPhoneLoginHandler(tornado.web.RequestHandler):
             http_client = HTTPClient()
             data = {"appid":"7x24hs:api",
                     "app_secret":"2518e11b3bc89ebec594350d5739f29e",
-                    "login":email,
+                    "login":phone,
                     "pwd":pwd}
             _json = json_encode(data)
             logging.info("request %r body %r", url, _json)
@@ -74,7 +74,7 @@ class AuthPhoneLoginHandler(tornado.web.RequestHandler):
             err_detail = str( sys.exc_info()[1] );
             logging.error("error: %r info: %r", err_title, err_detail)
             if err_detail == 'HTTP 404: Not Found':
-                err_msg = "用户名或密码不正确!"
+                err_msg = "手机号码或密码不正确!"
                 self.render('auth/phone-login.html', err_msg=err_msg)
                 return
 
@@ -111,7 +111,7 @@ class AuthPhoneRegisterHandler(tornado.web.RequestHandler):
             err_detail = str( sys.exc_info()[1] );
             logging.error("error: %r info: %r", err_title, err_detail)
             if err_detail == 'HTTP 409: Conflict':
-                err_msg = "用户名已经注册!"
+                err_msg = "此手机号码已经注册!"
                 self.render('auth/phone-register.html', err_msg=err_msg)
                 return
 
@@ -128,18 +128,18 @@ class AuthPhoneLostPwdHandler(tornado.web.RequestHandler):
     def post(self):
         logging.info(self.request)
         logging.info(self.request.body)
-        email = self.get_argument("reset_email", "")
-        ekey = self.get_argument("reset_ekey", "")
+        phone = self.get_argument("reset_phone", "")
+        verify_code = self.get_argument("reset_verify_code", "")
         pwd = self.get_argument("reset_pwd", "")
-        logging.info("try to reset password email=[%r] ekey=[%r] pwd=[%r]", email, ekey, pwd)
+        logging.info("try to reset password phone=[%r] verify_code=[%r] pwd=[%r]", phone, verify_code, pwd)
 
         try:
-            url = "http://api.7x24hs.com/auth/email/reset-pwd"
+            url = "http://api.7x24hs.com/auth/phone/reset-pwd"
             http_client = HTTPClient()
             data = {"appid":"7x24hs:api",
                     "app_secret":"2518e11b3bc89ebec594350d5739f29e",
-                    "login":email,
-                    "ekey":ekey,
+                    "login":phone,
+                    "verify_code":verify_code,
                     "pwd":pwd}
             _json = json_encode(data)
             logging.info("request %r body %r", url, _json)
@@ -152,38 +152,33 @@ class AuthPhoneLostPwdHandler(tornado.web.RequestHandler):
             if err_detail == 'HTTP 404: Not Found':
                 err_msg = "帐号不存在!"
                 self.render('auth/phone-lost-pwd.html',
-                        err_msg=err_msg,
-                        email=email,
-                        ekey=ekey)
+                        err_msg=err_msg)
                 return
             elif err_detail == 'HTTP 408: Request Timeout':
                 err_msg = "请求超时, 在5分钟内有效!"
                 self.render('auth/phone-lost-pwd.html',
-                        err_msg=err_msg,
-                        email=email,
-                        ekey=ekey)
+                        err_msg=err_msg)
                 return
 
         err_msg = "密码修改成功, 请重新登录!"
         self.render('auth/phone-lost-pwd.html',
-                err_msg=err_msg,
-                email=email,
-                ekey=ekey)
+                err_msg=err_msg)
 
 
 class AuthPhoneVerifyCodeHandler(tornado.web.RequestHandler):
     def post(self):
         logging.info(self.request)
         logging.info(self.request.body)
-        email = self.get_argument("fp_email", "")
-        logging.info("try to send forgot password email to [%r]", email)
+        req = json_decode(self.request.body)
+        phone = req['phone']
+        logging.info("try to send lost password sms to [%r]", phone)
 
         try:
-            url = "http://api.7x24hs.com/auth/email/forgot-pwd"
+            url = "http://api.7x24hs.com/auth/phone/verify-code"
             http_client = HTTPClient()
             data = {"appid":"7x24hs:api",
                     "app_secret":"2518e11b3bc89ebec594350d5739f29e",
-                    "login":email}
+                    "login":phone}
             _json = json_encode(data)
             logging.info("request %r body %r", url, _json)
             response = http_client.fetch(url, method="POST", body=_json)
