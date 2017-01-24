@@ -23,10 +23,13 @@
     <!-- Main Form -->
     <div class="login-form-1">
       <form id="forgot-password-form" class="text-left" method="POST" action="/auth/email/forgot-pwd">
-        <div class="etc-login-form">
-          <p>{{ err_msg }}</p>
+        {% if err_msg %}
+        <div class="login-form-main-message show error" style="max-width:278px;">
+          {{ err_msg }}
         </div>
+        {% else %}
         <div class="login-form-main-message"></div>
+        {% end %}
         <div class="main-login-form">
           <div class="login-group">
             <div class="form-group">
