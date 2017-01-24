@@ -123,7 +123,7 @@ class AuthEmailRegisterHandler(BaseHandler):
 
 class AuthEmailForgotPwdHandler(BaseHandler):
     def get(self):
-        err_msg = "When you fill in your registered email address, you will be sent instructions on how to reset your password."
+        err_msg = "sss"
         self.render('auth/email-forgot-pwd.html', err_msg=err_msg)
 
     def post(self):

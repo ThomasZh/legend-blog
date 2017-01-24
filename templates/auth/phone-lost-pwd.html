@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE HTML>
 <html>
 
 <head>
@@ -24,7 +24,7 @@
     <div class="login-form-1">
       <form id="reset-pwd-form" class="text-left" method="POST" action="/auth/phone/lost-pwd">
         {% if err_msg %}
-        <div class="login-form-main-message show error">
+        <div class="login-form-main-message show error" style="max-width:278px;">
           {{ err_msg }}
         </div>
         {% else %}
